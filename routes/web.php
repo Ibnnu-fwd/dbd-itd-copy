@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('ksh', [HomeController::class, 'ksh'])->name('user.ksh');
 
-Route::prefix('larvae')->group(function(){
+Route::prefix('larvae')->group(function () {
     Route::post('filter-map-regency', [UserLarvaeController::class, 'filterMapRegency'])->name('user.larvae.filter-map-regency');
     Route::post('filter-map-year', [UserLarvaeController::class, 'filterMapYear'])->name('user.larvae.filter-map-year');
     Route::get('/', [UserLarvaeController::class, 'index'])->name('user.larvae');
@@ -157,6 +157,7 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['auth']], function () {
     Route::resource('ksh', KshController::class, ['as' => 'admin']);
 
     // ABJ
+    Route::post('abj/cutting-data', [AbjController::class, 'cuttingData'])->name('admin.abj.cutting_data');
     Route::get('abj/geojson', [AbjController::class, 'geojson'])->name('admin.abj.geojson');
     Route::resource('abj', AbjController::class, ['as' => 'admin'])->only(['index']);
 

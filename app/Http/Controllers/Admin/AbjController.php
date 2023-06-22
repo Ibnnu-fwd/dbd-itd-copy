@@ -3,50 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Regency;
 use App\Repositories\Interface\AbjInterface;
+use App\Repositories\Interface\RegencyInterface;
 use Illuminate\Http\Request;
 
 class AbjController extends Controller
 {
 
     private $abj;
+    private $regency;
 
-    public function __construct(AbjInterface $abj) {
+    public function __construct(AbjInterface $abj, RegencyInterface $regency)
+    {
         $this->abj = $abj;
+        $this->regency = $regency;
     }
 
     public function index(Request $request)
     {
         // return $this->abj->getAllGroupByDistrict();
-        if($request->ajax())
-        {
+        if ($request->ajax()) {
             return datatables()
-            ->of($this->abj->getAllGroupByDistrict())
-            ->addColumn('district', function($data) {
-                return $data['district'];
-            })
-            ->addColumn('total_sample', function($data) {
-                return $data['total_sample'];
-            })
-            ->addColumn('total_check', function($data) {
-                return $data['total_check'];
-            })
-            // ->addColumn('location', function($data) {
-            //     return view('admin.abj.column.location', ['data' => $data['location']]);
-            // })
-            ->addColumn('abj', function($data) {
-                return view('admin.abj.column.abj_total', ['data' => $data]);
-            })
-            ->addColumn('created_at', function($data) {
-                return $data['created_at'];
-            })
-            ->addIndexColumn()
-            ->make(true);
+                ->of($this->abj->getAllGroupByDistrict())
+                ->addColumn('district', function ($data) {
+                    return $data['district'];
+                })
+                ->addColumn('total_sample', function ($data) {
+                    return $data['total_sample'];
+                })
+                ->addColumn('total_check', function ($data) {
+                    return $data['total_check'];
+                })
+                // ->addColumn('location', function($data) {
+                //     return view('admin.abj.column.location', ['data' => $data['location']]);
+                // })
+                ->addColumn('abj', function ($data) {
+                    return view('admin.abj.column.abj_total', ['data' => $data]);
+                })
+                ->addColumn('created_at', function ($data) {
+                    return $data['created_at'];
+                })
+                ->addIndexColumn()
+                ->make(true);
         }
         return view('admin.abj.index', [
-            'abj' => $this->abj->getAllGroupByDistrict()
+            'abj' => $this->abj->getAllGroupByDistrict(),
+            'regencies' => $this->regency->getAll(),
         ]);
     }
+
 
     public function create()
     {
@@ -91,5 +97,23 @@ class AbjController extends Controller
     public function geojson(Request $request)
     {
         return response()->json($this->abj->getGeoJson());
+    }
+    public function cuttingData(Request $request)
+    {
+        $request->validate([
+            'district_id' => ['required'],
+            'village_id' => ['required'],
+            'abj_total' => ['required'],
+        ]);
+
+        // dd($request->all());
+
+        try {
+            $this->abj->cuttingData($request->all());
+            return redirect()->back()->with('success', 'Data ABJ berhasil ditambahkan');
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            return redirect()->back()->with('error', $th->getMessage());
+        }
     }
 }
